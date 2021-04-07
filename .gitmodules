@@ -1,0 +1,3 @@
+[submodule "packages/cOS"]
+	path = packages/cOS
+	url = https://github.com/rancher-sandbox/cOS-toolkit
