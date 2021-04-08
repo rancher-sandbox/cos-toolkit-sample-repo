@@ -1,0 +1,50 @@
+# Default cOS OEM configuration file
+#
+# This file is part of cOS and will get reset during upgrades.
+#
+# Before you change this file manually,
+# consider copying this file to /usr/local/cloud-config or
+# copy the file with a prefix starting by 90, e.g. /oem/91_custom.yaml
+name: "Upgrades settings"
+stages:
+   initramfs:
+     - name: "Setup Luet config file"
+       directories:
+       - path: "/etc/luet"
+         permissions: 0600
+         owner: 0
+         group: 0
+       files:
+       - path: /etc/luet/luet.yaml
+         content: |
+                  # For a full reference, see:
+                  # https://luet-lab.github.io/docs/docs/getting-started/#configuration
+                  logging:
+                    color: false
+                    enable_emoji: false
+                  general:
+                     debug: false
+                     spinner_charset: 9
+                  repositories:
+                  - name: "sampleos"
+                    description: "sampleOS"
+                    type: "docker"
+                    enable: true
+                    cached: true
+                    priority: 1
+                    verify: false
+                    urls:
+                    - "raccos/releases-sampleos"
+         permissions: 0600
+         owner: 0
+         group: 0
+     - name: "Setup upgrade channel"
+       files:
+       - path: /etc/cos-upgrade-image
+         permissions: 0600
+         owner: 0
+         group: 0
+       environment_file: /etc/cos-upgrade-image
+       environment:
+         UPGRADE_IMAGE: system/sampleOS
+         CHANNEL_UPGRADES: "true"

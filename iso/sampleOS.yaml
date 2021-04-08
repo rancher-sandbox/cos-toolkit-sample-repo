@@ -1,0 +1,20 @@
+packages:
+  rootfs:
+  - system/sampleOS
+  uefi:
+  - live/systemd-boot
+  - live/boot
+  isoimage:
+  - live/syslinux
+  - live/boot
+
+initramfs:
+  kernel_file: "vmlinuz"
+  rootfs_file: "initrd"
+
+overlay: "true"
+image_prefix: "sampleOS-0."
+image_date: "true"
+label: "COS_LIVE"
+luet:
+  config: build/conf.yaml
