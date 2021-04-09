@@ -1,10 +1,5 @@
-BACKEND?=docker
-CONCURRENCY?=1
-
-
 export LUET?=$(shell which luet)
 export ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-COMPRESSION?=zstd
 ISO_SPEC?=$(ROOT_DIR)/iso/sampleOS.yaml
 CLEAN?=false
 export TREE?=$(ROOT_DIR)/packages
@@ -53,9 +48,6 @@ build:
 	$(LUET) build $(BUILD_ARGS) \
 	--values $(ROOT_DIR)/packages/cOS/values/$(FLAVOR).yaml \
 	--tree=$(TREE) $(PACKAGES) \
-	--backend $(BACKEND) \
-	--concurrency $(CONCURRENCY) \
-	--compression $(COMPRESSION) \
 	--destination $(DESTINATION)
 
 create-repo:
@@ -65,9 +57,7 @@ create-repo:
     --name "sampleOS" \
     --descr "sampleOS $(FLAVOR)" \
     --urls "" \
-    --tree-compression $(COMPRESSION) \
     --tree-filename tree.tar \
-    --meta-compression $(COMPRESSION) \
     --type http
 
 publish-repo:
@@ -77,17 +67,9 @@ publish-repo:
     --name "sampleOS" \
     --descr "sampleOS $(FLAVOR)" \
     --urls "" \
-    --tree-compression $(COMPRESSION) \
     --tree-filename tree.tar \
-    --meta-compression $(COMPRESSION) \
     --push-images \
     --type docker
-
-serve-repo:
-	LUET_NOLOCK=true $(LUET) serve-repo --port 8000 --dir $(DESTINATION)
-
-autobump:
-	TREE_DIR=$(ROOT_DIR) $(LUET) autobump-github
 
 validate:
 	$(LUET) tree validate --tree $(TREE) $(VALIDATE_OPTIONS)
