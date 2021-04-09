@@ -14,6 +14,7 @@ FLAVOR?=opensuse
 VALIDATE_OPTIONS?=-s
 DESTINATION?=$(ROOT_DIR)/build
 REPO_CACHE?=raccos/sampleos
+PULL_REPOS?=raccos/$(FLAVOR) raccos/sampleos
 FINAL_REPO?=raccos/releases-sampleos
 
 PACKAGES?=$(shell yq r -j $(ISO_SPEC) 'packages.[*]' | jq -r '.[]' | sort -u)
@@ -24,6 +25,11 @@ ISO?=$(ROOT_DIR)/$(shell ls *.iso)
 export REPO_CACHE
 ifneq ($(strip $(REPO_CACHE)),)
 	BUILD_ARGS+=--image-repository $(REPO_CACHE)
+endif
+
+export PULL_REPOS
+ifneq ($(strip $(PULL_REPOS)),)
+	BUILD_ARGS+=$(shell printf -- "--pull-repository %s " $(PULL_REPOS))
 endif
 
 all: deps build
