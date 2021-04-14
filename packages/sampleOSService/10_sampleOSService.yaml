@@ -1,0 +1,32 @@
+# Default SampleOS OEM configuration file
+#
+# This file is part of sampleOS and will get reset during upgrades.
+#
+# Before you change this file manually,
+# consider copying this file to /usr/local/cloud-config or
+# copy the file with a prefix starting by 90, e.g. /oem/91_custom.yaml
+
+name: "Default sampleService configuration"
+stages:
+   initramfs:
+     - name: "Sample Service Config"
+       files:
+       - path: /etc/systemd/system/sampleservice.service
+         content: |
+                [Unit]
+                Description=cOS setup after network
+                After=network.target
+                Wants=network.target
+
+                [Service]
+                Type=simple
+                ExecStart=/usr/bin/sampleOSService
+                User=dummyuser
+
+                [Install]
+                WantedBy=multi-user.target
+         permissions: 0644
+         owner: 0
+         group: 0
+       commands:
+         - /usr/bin/systemctl enable sampleservice.service
