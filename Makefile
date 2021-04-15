@@ -7,9 +7,8 @@ export TREE?=$(ROOT_DIR)/packages
 BUILD_ARGS?=--pull --no-spinner --only-target-package --live-output
 FLAVOR?=opensuse
 VALIDATE_OPTIONS?=-s
-DESTINATION?=$(ROOT_DIR)/build
 REPO_CACHE?=raccos/sampleos
-PULL_REPOS?=raccos/$(FLAVOR) raccos/sampleos
+PULL_REPOS?=raccos/$(FLAVOR)
 FINAL_REPO?=raccos/releases-sampleos
 
 PACKAGES?=$(shell yq r -j $(ISO_SPEC) 'packages.[*]' | jq -r '.[]' | sort -u)
@@ -41,33 +40,26 @@ endif
 endif
 
 clean:
-	 rm -rf $(DESTINATION) $(ROOT_DIR)/.qemu $(ROOT_DIR)/*.iso $(ROOT_DIR)/*.sha256
+	 rm -rf $(ROOT_DIR)/build $(ROOT_DIR)/.qemu $(ROOT_DIR)/*.iso $(ROOT_DIR)/*.sha256
 
 .PHONY: build
 build:
 	$(LUET) build $(BUILD_ARGS) \
 	--values $(ROOT_DIR)/packages/cOS/values/$(FLAVOR).yaml \
 	--tree=$(TREE) $(PACKAGES) \
-	--destination $(DESTINATION)
+	--destination $(ROOT_DIR)/build
 
 create-repo:
 	$(LUET) create-repo --tree "$(TREE)" \
-    --output $(DESTINATION) \
-    --packages $(DESTINATION) \
-    --name "sampleOS" \
-    --descr "sampleOS $(FLAVOR)" \
-    --urls "" \
-    --tree-filename tree.tar \
-    --type http
+    --output $(ROOT_DIR)/build \
+    --packages $(ROOT_DIR)/build \
+    --name "sampleOS" 
 
 publish-repo:
 	$(LUET) create-repo $(PUBLISH_ARGS) --tree "$(TREE)" \
     --output $(FINAL_REPO) \
-    --packages $(DESTINATION) \
+    --packages $(ROOT_DIR)/build \
     --name "sampleOS" \
-    --descr "sampleOS $(FLAVOR)" \
-    --urls "" \
-    --tree-filename tree.tar \
     --push-images \
     --type docker
 
@@ -76,20 +68,5 @@ validate:
 
 # ISO
 
-$(DESTINATION):
-	mkdir $(DESTINATION)
-
-$(DESTINATION)/conf.yaml: $(DESTINATION)
-	touch $(ROOT_DIR)/build/conf.yaml
-	yq w -i $(ROOT_DIR)/build/conf.yaml 'repositories[0].name' 'sampleOS'
-	yq w -i $(ROOT_DIR)/build/conf.yaml 'repositories[0].enable' true
-
-local-iso: create-repo $(DESTINATION)/conf.yaml
-	yq w -i $(DESTINATION)/conf.yaml 'repositories[0].urls[0]' $(DESTINATION)
-	yq w -i $(DESTINATION)/conf.yaml 'repositories[0].type' 'disk'
-	$(LUET) geniso-isospec $(ISO_SPEC)
-
-iso: $(DESTINATION)/conf.yaml
-	yq w -i $(DESTINATION)/conf.yaml 'repositories[0].type' 'docker'
-	yq w -i $(DESTINATION)/conf.yaml 'repositories[0].urls[0]' $(FINAL_REPO)
+local-iso: create-repo
 	$(LUET) geniso-isospec $(ISO_SPEC)
