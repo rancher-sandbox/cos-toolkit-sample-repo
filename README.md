@@ -1,6 +1,6 @@
 # SampleOS
 
-SampleOS is a dummy example of a derivate system based on containerOS (**cOS**).
+SampleOS is a dummy example of a derivate system built with containerOS-toolkit (**cOS-toolkit**).
 The purpose of this repository is moslty to showcase and demonstrate how to
 extend and customize containerOS using its own toolkit.
 
