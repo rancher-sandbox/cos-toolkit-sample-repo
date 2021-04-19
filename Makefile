@@ -5,13 +5,12 @@ CLEAN?=false
 export TREE?=$(ROOT_DIR)/packages
 
 BUILD_ARGS?=--pull --no-spinner --only-target-package --live-output
-FLAVOR?=opensuse
 VALIDATE_OPTIONS?=-s
 REPO_CACHE?=raccos/sampleos
-PULL_REPOS?=raccos/$(FLAVOR)
+PULL_REPOS?=raccos/opensuse
 FINAL_REPO?=raccos/releases-sampleos
 
-PACKAGES?=$(shell yq r -j $(ISO_SPEC) 'packages.[*]' | jq -r '.[]' | sort -u)
+PACKAGES?=system/sampleOS
 HAS_LUET := $(shell command -v luet 2> /dev/null)
 PUBLISH_ARGS?=
 ISO?=$(ROOT_DIR)/$(shell ls *.iso)
@@ -45,26 +44,25 @@ clean:
 .PHONY: build
 build:
 	$(LUET) build $(BUILD_ARGS) \
-	--values $(ROOT_DIR)/packages/cOS/values/$(FLAVOR).yaml \
-	--tree=$(TREE) $(PACKAGES) \
-	--destination $(ROOT_DIR)/build
+	--destination $(ROOT_DIR)/build \
+	--from-repositories $(PACKAGES)
 
 create-repo:
-	$(LUET) create-repo --tree "$(TREE)" \
-    --output $(ROOT_DIR)/build \
-    --packages $(ROOT_DIR)/build \
-    --name "sampleOS" 
+	$(LUET) create-repo \
+	--output $(ROOT_DIR)/build \
+	--name "sampleOS" \
+	--from-repositories 
 
 publish-repo:
-	$(LUET) create-repo $(PUBLISH_ARGS) --tree "$(TREE)" \
-    --output $(FINAL_REPO) \
-    --packages $(ROOT_DIR)/build \
-    --name "sampleOS" \
-    --push-images \
-    --type docker
+	$(LUET) create-repo $(PUBLISH_ARGS) \
+	--output $(FINAL_REPO) \
+	--name "sampleOS" \
+	--from-repositories \
+	--push-images \
+	--type docker
 
 validate:
-	$(LUET) tree validate --tree $(TREE) $(VALIDATE_OPTIONS)
+	$(LUET) tree validate $(VALIDATE_OPTIONS)
 
 # ISO
 
