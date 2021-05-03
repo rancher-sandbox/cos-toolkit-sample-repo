@@ -1,6 +1,6 @@
 export LUET?=$(shell which luet)
 export ROOT_DIR:=$(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-ISO_SPEC?=$(ROOT_DIR)/iso/sampleOS.yaml
+ISO_SPEC?=$(ROOT_DIR)/iso.yaml
 CLEAN?=false
 export TREE?=$(ROOT_DIR)/packages
 
@@ -33,9 +33,8 @@ ifneq ($(shell id -u), 0)
 	@echo "You must be root to perform this action."
 	exit 1
 endif
-	curl https://get.mocaccino.org/luet/get_luet_root.sh |  sh
-	luet install -y repository/mocaccino-extra-stable
-	luet install -y utils/jq utils/yq system/luet-devkit
+	cd /tmp && curl https://get.mocaccino.org/luet/get_luet_root.sh | sh
+	cd /tmp && luet install -y extension/makeiso
 endif
 
 clean:
@@ -65,6 +64,5 @@ validate:
 	$(LUET) tree validate $(VALIDATE_OPTIONS)
 
 # ISO
-
-local-iso: create-repo
-	$(LUET) geniso-isospec $(ISO_SPEC)
+iso: create-repo
+	$(LUET)-makeiso $(ISO_SPEC) --local $(ROOT_DIR)/build

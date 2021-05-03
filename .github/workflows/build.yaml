@@ -154,16 +154,10 @@ jobs:
     - name: Install deps
       run: |
         sudo apt-get update
-        sudo apt-get install -y xorriso squashfs-tools dosfstools
+        sudo apt-get install -y xorriso squashfs-tools
         sudo -E make deps
 
     - name: Build ISO from local build 🔧
-      if: github.event_name != 'schedule' && !startsWith(github.ref, 'refs/tags/')
-      run: |
-        sudo -E make local-iso
-
-    - name: Build ISO from remote repositories 🔧
-      if: github.event_name == 'schedule' || startsWith(github.ref, 'refs/tags/')
       run: |
         sudo -E make iso
 
