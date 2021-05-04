@@ -52,10 +52,6 @@ jobs:
       run: |
         sudo -E make deps
 
-    - name: Validate 🌳
-      run: |
-        make validate
-
     - name: Build packages 🔧
       run: |
         sudo -E make build
