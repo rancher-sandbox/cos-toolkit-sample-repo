@@ -9,6 +9,7 @@ on:
     branches:
       - "master"
 jobs:
+
   build:
     runs-on: ubuntu-latest
     strategy:
@@ -167,9 +168,3 @@ jobs:
         path: |
           *.iso
           *.sha256
-    
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: luet-build-${{ matrix.flavor }}.log
-        path: isowork/*.log
