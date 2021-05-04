@@ -31,6 +31,7 @@ boot time the over the ephemeral `/etc`.
         - [Generate the ISO](#generate-the-iso)
     - [System upgrades](#system-upgrades)
     - [Build cache](#build-cache)
+    - [Repository layout](#repository-layout)
 
 <!-- /TOC -->
 
@@ -178,3 +179,58 @@ Build cache allows to rebuild the same packages given a git checkout (assuming t
 The cache images are generated under the image reference passed by `--image-repository` and they can be pushed automatically during build time by specifying the `--push` flag.
 
 _Note:_ In order to use build caches, you need to include the `cos-toolkit` tree checkout, or either as a git submodule under the `packages` folder, or by specifying an additional `--tree` argument when calling `luet build` pointing to a local path.
+
+
+## Repository layout
+
+`cos-toolkit` uses [luet](https://github.com/mudler/luet) behind the scenes to build the images. Luet uses a YAML syntax and a template engine to define packages that are built from containers.
+
+The sample repository and `cos-toolkit` are [Luet trees](https://luet-lab.github.io/docs/docs/concepts/packages/specfile/) which contains package definitions. This allows derivatives to re-use the same components of `cos` as a whole, just consume parts of it or **point to specific versions of it** by checking out the `cos-toolkit` version in the derivative's tree repository.
+
+The [.luet.yaml](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/.luet.yaml) file in the repository root defines where to take the compilations definition from and links it with the images built by the `cos-toolkit` CI. 
+
+_Note: You can at any time decide to drop this file and replace it with a git submodule inside the `packages` directory - this allows you to point to specific versions of `cos-toolkit`._
+
+In the repository we define just two packages: 
+
+- The definition of our OS `system/sampleOS` (https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOS/definition.yaml)
+- The definition of our App `app/sampleOSService` (https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOSService/definition.yaml)
+
+We can see we reuse `cos` as we reference it in the `sampleOS` [build requirements](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOS/build.yaml#L1):
+
+```yaml
+requires:
+- category: "system"
+  name: "cos"
+  version: ">=0"
+- category: "app"
+  name: "sampleOSService"
+  version: ">=0"
+```
+
+This already allows us to inherit all the `system/cos` featureset, which is presented in the [README](https://github.com/rancher-sandbox/cOS-toolkit#readme). We just apply some minor changes ( default username and password ) and [define where our images will be pushed to](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOS/02_upgrades.yaml). This is needed in order to allow `cos-upgrade` to upgrade from your container registry.
+
+
+At this point, we have our application, which is a golang app, and the build definition looks like the following:
+
+```yaml
+requires:
+- name: "golang"
+  category: "build"
+  version: ">=0"
+
+env:
+- PATH=$PATH:/usr/local/go/bin
+- GOPATH=/luetbuild/go
+
+steps:
+- zypper in -y {{.Values.additional_packages}}
+- go build -o sampleOSService main.go 
+- mv sampleOSService /usr/bin
+- cp 10_sampleOSService.yaml /system/oem/
+- useradd --system dummyuser
+```
+
+We have added some additional packages needed for our service (`zypper in -y {{.Values.additional_packages}}`, where `additional_packages` are defined [here](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOSService/definition.yaml#L5)), and we have built the golang application by requiring `build/golang`, which is provided by `cos-toolkit`.
+
+At this point, `cos-build` will just run `luet build` and `luet geniso` inside a container. `geniso` is a simple script that reads the [iso spec](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/iso.yaml) and creates an ISO with the defined luet packages, which in our case is `system/sampleOS`.
