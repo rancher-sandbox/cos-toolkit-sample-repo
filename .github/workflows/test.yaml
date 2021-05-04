@@ -1,0 +1,46 @@
+name: Test SampleOS build from envrc
+# We just test here that we can build the derivative by running cos-build
+on:
+  schedule:
+    - cron:  '0 20 * * *'
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - "master"
+jobs:
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: |
+        git fetch --prune --unshallow
+
+    - name: setup-docker
+      uses: docker-practice/actions-setup-docker@master
+
+    # We patch docker to use all the HD available in GH action free runners
+    - name: Patch Docker Daemon data-root
+      run: |
+        DOCKER_DATA_ROOT='/mnt/var/lib/docker'
+        DOCKER_DAEMON_JSON='/etc/docker/daemon.json'
+        sudo mkdir -p "${DOCKER_DATA_ROOT}"
+        jq --arg dataroot "${DOCKER_DATA_ROOT}" '. + {"data-root": $dataroot}' "${DOCKER_DAEMON_JSON}" > "/tmp/docker.json.tmp"
+        sudo mv "/tmp/docker.json.tmp" "${DOCKER_DAEMON_JSON}"
+        sudo systemctl restart docker
+
+    - name: Build  🔧
+      shell: 'script -q -e -c "bash {0}"'
+      run: |
+        source .envrc
+        cos-build
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: sampleOS-${{ matrix.flavor }}.iso.zip
+        path: |
+          *.iso
+          *.sha256
