@@ -2,5 +2,5 @@ repositories:
   - name: cOS
     enable: true
     urls:
-      - raccos/releases-opensuse
+      - quay.io/costoolkit/releases-opensuse
     type: docker
