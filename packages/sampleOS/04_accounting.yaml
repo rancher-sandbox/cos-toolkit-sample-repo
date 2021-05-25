@@ -10,8 +10,7 @@ stages:
    initramfs:
      - name: "Setup users"
        ensure_entities:
-       - path: /etc/shadow
-         entity: |
+       - entity: |
             kind: "shadow"
             username: "root"
-            password: "$1$zbqaUEOw$iHflRXL1l1Hs9W1DMJWOO0"
+            password: "sampleos"

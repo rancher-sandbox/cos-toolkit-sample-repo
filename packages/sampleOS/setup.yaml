@@ -20,49 +20,63 @@ stages:
         NAME: "cOS"
         ID: "cOS"
         ANSI_COLOR: "0;32"
-        BUG_REPORT_URL: "https://github.com/mudler/cOS/issues"
-        HOME_URL: "https://github.com/mudler/cOS"
-        DOCUMENTATION_URL: "https://github.com/mudler/cOS"
+        BUG_REPORT_URL: "https://github.com/rancher-sandbox/cos-toolkit-sample-repo/issues"
+        HOME_URL: "https://github.com/rancher-sandbox/cos-toolkit-sample-repo"
+        DOCUMENTATION_URL: "https://github.com/rancher-sandbox/cos-toolkit-sample-repo"
         VERSION: ":VERSION:"
         PRETTY_NAME: ":PRETTY_NAME:"
     - name: "Grub"
       files:
-      - path: /boot/grub2/grub.cfg
+      - path: /etc/cos/grub.cfg
         content: |
-            set timeout=10
-            set default="${saved_entry}"
+              set timeout=10
+              set default="${saved_entry}"
 
-            set fallback="0 1 2"
-            set gfxmode=auto
-            set gfxpayload=keep
-            insmod all_video
-            insmod gfxterm
-            menuentry "cOS" --id cos {
-              search.fs_label COS_STATE root
-              set img=/cOS/active.img
-              loopback loop0 /$img
-              set root=($root)
-              linux (loop0)/boot/vmlinuz console=tty1 ro root=LABEL=COS_ACTIVE iso-scan/filename=/cOS/active.img panic=5
-              initrd (loop0)/boot/initrd
-            }
+              set fallback="0 1 2"
+              set gfxmode=auto
+              set gfxpayload=keep
+              insmod all_video
+              insmod gfxterm
+              menuentry "sampleOS" --id cos {
+                search.fs_label COS_STATE root
+                set img=/cOS/active.img
+                set label=COS_ACTIVE
+                loopback loop0 /$img
+                set root=($root)
+                source (loop0)/etc/cos/bootargs.cfg
+                linux (loop0)$kernel $kernelcmd
+                initrd (loop0)$initramfs
+              }
 
-            menuentry "cOS (fallback)" --id fallback {
-              search.fs_label COS_STATE root
-              set img=/cOS/passive.img
-              loopback loop0 /$img
-              set root=($root)
-              linux (loop0)/boot/vmlinuz console=tty1 ro root=LABEL=COS_PASSIVE iso-scan/filename=/cOS/passive.img panic=5
-              initrd (loop0)/boot/initrd
-            }
+              menuentry "sampleOS (fallback)" --id fallback {
+                search.fs_label COS_STATE root
+                set img=/cOS/passive.img
+                set label=COS_PASSIVE
+                loopback loop0 /$img
+                set root=($root)
+                source (loop0)/etc/cos/bootargs.cfg
+                linux (loop0)$kernel $kernelcmd
+                initrd (loop0)$initramfs
+              }
 
-            menuentry "cOS recovery" --id recovery {
-              search.fs_label COS_RECOVERY root
-              set img=/cOS/recovery.img
-              loopback loop0 /$img
-              set root=($root)
-              linux (loop0)/boot/vmlinuz console=tty1 ro root=LABEL=COS_SYSTEM iso-scan/filename=/cOS/recovery.img panic=5
-              initrd (loop0)/boot/initrd
-            }
+              menuentry "sampleOS recovery" --id recovery {
+                search.fs_label COS_RECOVERY root
+                set img=/cOS/recovery.img
+                set label=COS_SYSTEM
+                loopback loop0 /$img
+                set root=($root)
+                source (loop0)/etc/cos/bootargs.cfg
+                linux (loop0)$kernel $kernelcmd
+                initrd (loop0)$initramfs
+              }
+        permissions: 0600
+        owner: 0
+        group: 0
+      - path: /etc/cos/bootargs.cfg
+        content: |
+            set kernel=/boot/vmlinuz
+            set kernelcmd="console=tty1 root=LABEL=$label iso-scan/filename=$img panic=5 security=selinux selinux=1"
+            set initramfs=/boot/initrd
         permissions: 0600
         owner: 0
         group: 0

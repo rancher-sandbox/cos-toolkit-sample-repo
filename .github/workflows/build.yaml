@@ -56,6 +56,7 @@ jobs:
       run: |
         sudo -E make build
         ls -liah $PWD/build
+        sudo chmod -R 777 build
 
     - name: Create repo
       run: |
