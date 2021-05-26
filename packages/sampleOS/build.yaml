@@ -1,11 +1,20 @@
-join:
+requires:
 - category: "system"
   name: "cos"
   version: ">=0"
-
-- category: "app"
-  name: "sampleOSService"
-  version: ">=0"
+copy:
+- package:
+    category: "app"
+    name: "sampleOSService"
+    version: ">=0"
+  source: /usr/bin/sampleOSService
+  destination: /usr/bin/sampleOSService
+- package:
+    category: "app"
+    name: "sampleOSService"
+    version: ">=0"
+  source: /system/oem/10_sampleOSService.yaml
+  destination: /system/oem/10_sampleOSService.yaml
    
 steps:
 - sed -i 's/:VERSION:/{{.Values.version}}/g' setup.yaml
@@ -14,6 +23,7 @@ steps:
 - cp -fv 03_branding.yaml /system/oem/03_branding.yaml
 - cp -fv 04_accounting.yaml /system/oem/04_accounting.yaml
 - useradd --system dummyuser
+- zypper in -y {{.Values.additional_packages}}
 - yip setup.yaml
 
 unpack: true
@@ -50,7 +60,7 @@ excludes:
 - ^/var/lib/YaST2
 
 # General
-- ^/usr/include
+#- ^/usr/include
 #- ^/usr/local
 - ^/usr/local/bin
 - ^/usr/local/go

@@ -8,7 +8,6 @@ env:
 - GOPATH=/luetbuild/go
 
 steps:
-- zypper in -y {{.Values.additional_packages}}
 - go build -o sampleOSService main.go 
 - mv sampleOSService /usr/bin
 - mkdir -p /system/oem/

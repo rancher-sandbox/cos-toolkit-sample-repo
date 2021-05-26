@@ -2,6 +2,3 @@ name: "sampleOSService"
 category: "app"
 version: "0.1.4"
 
-additional_packages: >-
-    fortune
-    cowsay
