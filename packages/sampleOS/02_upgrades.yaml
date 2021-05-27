@@ -48,3 +48,4 @@ stages:
        environment:
          UPGRADE_IMAGE: system/sampleOS
          CHANNEL_UPGRADES: "true"
+         VERIFY: "false"
