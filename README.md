@@ -133,21 +133,22 @@ $ sudo luet install -y extension/makeiso
 
 ```bash
 $ sudo luet build --only-target-package --pull --image-repository raccos/sampleos \
-     --pull-repository raccos/opensuse --destination build --from-repositories system/sampleOS
+     --tree packages --from-repositories system/sampleOS
 ```
 
 Where:
 - **--only-target-package**: tells that we will just need to build `system/sampleOS`, and not its dependencies
 - **--pull**: Enable reusal of the `cos-toolkit` image caches
-- **--image-repository**: Is where our resulting caches images are named after. Combined with `--push` it allows to push all the images used during build
-- **--pull-repository**: A list of image references where to pull the cache from (in our case, `raccos/opensuse`)
-- **--destination**: Where the resulting packages built are stored (defaults to `build` in the current dir)
+- **--image-repository**: Is where our resulting caches images are named after. Combined with `--push` it allows to push all the images used during build. It is optional
+- **--tree**: A path where the specfiles are, in this case `packages`. Defaults to current working directory
 - **--from-repositories**: Allow to resolve package dependencies compilation specs from remote repositories (see `.luet.yaml`)
+
+The resulting artifacts will be available in `build/`. You can tweak the output folder with the `--destination` flag.
 
 ### 4. Create the local repository
 
 ```bash
-$ luet create-repo --output build --name sampleOS --from-repositories
+$ luet create-repo --tree packages --name sampleOS --from-repositories
 ```
 
 ### 5. Generate the ISO
@@ -199,7 +200,7 @@ In the repository we define just two packages:
 We can see we reuse `cos` as we reference it in the `sampleOS` [build requirements](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOS/build.yaml#L1):
 
 ```yaml
-requires:
+join:
 - category: "system"
   name: "cos"
   version: ">=0"
@@ -208,7 +209,9 @@ requires:
   version: ">=0"
 ```
 
-This already allows us to inherit all the `system/cos` featureset, which is presented in the [README](https://github.com/rancher-sandbox/cOS-toolkit#readme). We just apply some minor changes ( default username and password ) and [define where our images will be pushed to](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOS/02_upgrades.yaml). This is needed in order to allow `cos-upgrade` to upgrade from your container registry.
+This already allows us to inherit all the `system/cos` featureset, which is presented in the [README](https://github.com/rancher-sandbox/cOS-toolkit#readme). Another approach is [available here](https://github.com/rancher-sandbox/epinio-appliance-demo-sample/blob/master/packages/epinioOS/build.yaml#L1) where we use `requires` instead. See also the [official docs](https://luet-lab.github.io/docs/docs/concepts/packages/specfile/#package-source-image) for more details.
+
+We just apply some minor changes ( default username and password ) and [define where our images will be pushed to](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOS/02_upgrades.yaml). This is needed in order to allow `cos-upgrade` to upgrade from your container registry.
 
 
 At this point, we have our application, which is a golang app, and the build definition looks like the following:
@@ -228,9 +231,10 @@ steps:
 - go build -o sampleOSService main.go 
 - mv sampleOSService /usr/bin
 - cp 10_sampleOSService.yaml /system/oem/
-- useradd --system dummyuser
 ```
 
 We have added some additional packages needed for our service (`zypper in -y {{.Values.additional_packages}}`, where `additional_packages` are defined [here](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/packages/sampleOSService/definition.yaml#L5)), and we have built the golang application by requiring `build/golang`, which is provided by `cos-toolkit`.
 
 At this point, `cos-build` will just run `luet build` and `luet geniso` inside a container. `geniso` is a simple script that reads the [iso spec](https://github.com/rancher-sandbox/cos-toolkit-sample-repo/blob/master/iso.yaml) and creates an ISO with the defined luet packages, which in our case is `system/sampleOS`.
+
+For a more concrete example where we embed [k3s](https://k3s.io/) and pinpoint to a specific `cos-toolkit` version, see the [EpinioOS appliance demo example](https://github.com/rancher-sandbox/epinio-appliance-demo-sample)
