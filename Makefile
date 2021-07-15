@@ -4,7 +4,7 @@ ISO_SPEC?=$(ROOT_DIR)/iso.yaml
 CLEAN?=false
 export TREE?=$(ROOT_DIR)/packages
 
-BUILD_ARGS?=--pull --no-spinner --only-target-package --live-output
+BUILD_ARGS?=--pull --no-spinner --pull-repository quay.io/costoolkit/build-opensuse-cache --only-target-package --live-output
 VALIDATE_OPTIONS?=-s
 REPO_CACHE?=raccos/sampleos
 PULL_REPOS?=raccos/opensuse
@@ -33,8 +33,8 @@ ifneq ($(shell id -u), 0)
 	@echo "You must be root to perform this action."
 	exit 1
 endif
-	cd /tmp && curl https://get.mocaccino.org/luet/get_luet_root.sh | sh
-	cd /tmp && luet install -y extension/makeiso
+	cd /tmp && curl https://raw.githubusercontent.com/rancher-sandbox/cOS-toolkit/master/scripts/get_luet.sh | sh
+	cd /tmp && luet install -y toolchain/luet-makeiso
 endif
 
 clean:

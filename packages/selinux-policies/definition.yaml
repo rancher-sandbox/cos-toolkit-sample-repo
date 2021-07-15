@@ -1,3 +1,4 @@
-name: "policy"
-category: "selinux"
-version: 0.0.6+2
+name: "selinux-policies"
+category: "system"
+version: 0.0.6+6
+distribution: "opensuse"

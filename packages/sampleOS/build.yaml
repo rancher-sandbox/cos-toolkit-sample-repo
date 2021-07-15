@@ -2,7 +2,7 @@
 # 
 # See also https://github.com/rancher-sandbox/cos-toolkit-sample-repo/commit/1e9e33a7feb600ecef5948d137659f95e8e31b0b
 # for an equivalent using a different strategy
-join:
+requires:
 - category: "system"
   name: "cos"
   version: ">=0"
@@ -13,6 +13,7 @@ join:
   name: "policy"
   version: ">=0"
 
+requires_final_images: true
 # Run the steps in the resulting container
 steps:
 - sed -i 's/:VERSION:/{{.Values.version}}/g' setup.yaml

@@ -1,0 +1,10 @@
+requires:
+- name: "selinux-policies"
+  category: "system"
+  version: ">=0"
+
+steps:
+- sed -i "s|^SELINUX=.*|SELINUX=permissive|g" /etc/selinux/config
+- rm -rf /.autorelabel
+- checkmodule -M -m -o sampleOS.mod sampleOS.te && semodule_package -o sampleOS.pp -m sampleOS.mod
+- semodule -i sampleOS.pp
