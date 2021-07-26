@@ -4,7 +4,7 @@ ISO_SPEC?=$(ROOT_DIR)/iso.yaml
 CLEAN?=false
 export TREE?=$(ROOT_DIR)/packages
 
-BUILD_ARGS?=--pull --no-spinner --pull-repository quay.io/costoolkit/build-opensuse-cache --only-target-package --live-output
+BUILD_ARGS?=--pull --no-spinner --pull-repository quay.io/costoolkit/build-green-cache --only-target-package --live-output
 VALIDATE_OPTIONS?=-s
 REPO_CACHE?=raccos/sampleos
 PULL_REPOS?=raccos/opensuse

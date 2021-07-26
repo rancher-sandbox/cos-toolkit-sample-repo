@@ -46,7 +46,7 @@ jobs:
 
     - name: Set Push options
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: echo "BUILD_ARGS=--pull-repository quay.io/costoolkit/build-opensuse-cache --push --only-target-package --pull" >> $GITHUB_ENV
+      run: echo "BUILD_ARGS=--pull-repository quay.io/costoolkit/build-green-cache --push --only-target-package --pull" >> $GITHUB_ENV
 
     - name: Install deps
       run: |
